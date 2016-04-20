@@ -11,41 +11,103 @@ namespace BrokenKeyboard
 
         public static int Solve(int workingKeyCount, string textToType)
         {
-            var maxDistance = 0;
-            for (var startIndex = 0; startIndex < textToType.Length; startIndex++)
+            var bk = new BrokenKeyboard(workingKeyCount, textToType);
+            bk.FindSolution();
+            return bk.MaximumDistance;
+        }
+
+        private readonly int workingKeyCount;
+        private readonly string textToType;
+
+        private BrokenKeyboard(int workingKeyCount, string textToType)
+        {
+            this.workingKeyCount = workingKeyCount;
+            this.textToType = textToType;
+            MaximumDistance = 0;
+        }
+
+        public int MaximumDistance { get; private set; }
+
+        private int startIndex;
+        private int endIndex;
+        private List<char> keyboardChars;
+
+        private int Distance => endIndex - startIndex;
+
+        private void FindSolution()
+        {
+            startIndex = 0;
+            endIndex = 0;
+            keyboardChars = new List<char>();
+
+            // Advance endIndex as far as possible
+            while (endIndex < textToType.Length)
             {
-
-                var distance = 0;
-                var charactersOnKeyboard = new List<char>(workingKeyCount);
-
-                for (var index = startIndex; index < textToType.Length; index++)
+                var c = textToType[endIndex];
+                if (keyboardChars.Contains(c))
                 {
-                    var c = textToType[index];
-                    if (charactersOnKeyboard.Contains(c))
+                    endIndex += 1;
+                }
+                else
+                {
+                    if (keyboardChars.Count < workingKeyCount)
                     {
-                        distance += 1;
+                        keyboardChars.Add(c);
+                        endIndex += 1;
                     }
                     else
                     {
-                        if (charactersOnKeyboard.Count < workingKeyCount)
-                        {
-                            charactersOnKeyboard.Add(c);
-                            distance += 1;
-                        }
-                        else
-                        {
-                            break;
-                        }
+                        break;
                     }
-                }
-
-                if (distance > maxDistance)
-                {
-                    maxDistance = distance;
                 }
             }
 
-            return maxDistance;
+            MaximumDistance = Distance;
+
+            while (Advance())
+            {
+                if (Distance > MaximumDistance)
+                {
+                    MaximumDistance = Distance;
+                }
+            }
+        }
+
+        private bool Advance()
+        {
+            var charToRemove = textToType[startIndex];
+            keyboardChars.Remove(charToRemove);
+
+            while (textToType[startIndex] == charToRemove)
+            {
+                startIndex += 1;
+
+                if (startIndex >= textToType.Length)
+                {
+                    return false;
+                }
+            }
+
+            for (var i = startIndex; i < endIndex; i++)
+            {
+                if (textToType[i] == charToRemove)
+                {
+                    endIndex = i;
+                    break;
+                }
+            }
+
+            if (endIndex < textToType.Length)
+            {
+                var charToAdd = textToType[endIndex];
+                keyboardChars.Add(charToAdd);
+                while (endIndex < textToType.Length && keyboardChars.Contains(textToType[endIndex]))
+                {
+                    endIndex += 1;
+                }
+            }
+
+            return true;
         }
     }
 }

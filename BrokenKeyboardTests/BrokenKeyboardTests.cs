@@ -23,7 +23,7 @@ namespace BrokenKeyboardTests
             var timer = new Stopwatch();
 
             timer.Start();
-            var repetitionCount = 100000;
+            var repetitionCount = 100000000;
             var textToType = new string('a', repetitionCount);
             var actualResult = BrokenKeyboard.BrokenKeyboard.Solve(1, textToType);
             actualResult.Should().Be(repetitionCount);
