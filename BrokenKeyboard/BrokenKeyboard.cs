@@ -12,10 +12,15 @@ namespace BrokenKeyboard
         public static int Solve(int workingKeyCount, string textToType)
         {
             var bk = new BrokenKeyboard(workingKeyCount, textToType);
-            bk.FindSolution();
-            return bk.MaximumDistance;
+            return bk.GetMaximumDistance();
         }
 
+        private List<char> keyboardChars;
+
+        private int startIndex;
+        private int endIndex;
+        private int Distance => endIndex - startIndex;
+        
         private readonly int workingKeyCount;
         private readonly string textToType;
 
@@ -23,24 +28,69 @@ namespace BrokenKeyboard
         {
             this.workingKeyCount = workingKeyCount;
             this.textToType = textToType;
-            MaximumDistance = 0;
         }
 
-        public int MaximumDistance { get; private set; }
+        public int GetMaximumDistance()
+        {
+            Initialise();
 
-        private int startIndex;
-        private int endIndex;
-        private List<char> keyboardChars;
+            AdvanceEnd();
 
-        private int Distance => endIndex - startIndex;
+            var maximumDistance = Distance;
 
-        private void FindSolution()
+            while (Advance())
+            {
+                if (Distance > maximumDistance)
+                {
+                    maximumDistance = Distance;
+                }
+            }
+
+            return maximumDistance;
+        }
+
+        private void Initialise()
         {
             startIndex = 0;
             endIndex = 0;
             keyboardChars = new List<char>();
+        }
 
-            // Advance endIndex as far as possible
+        private bool Advance()
+        {
+            if (!AdvanceStart())
+            {
+                return false;
+            }
+
+            AdvanceEnd();
+
+            return true;
+        }
+
+        private bool AdvanceStart()
+        {
+            var charToRemove = textToType[startIndex];
+
+            keyboardChars.Remove(charToRemove);
+
+            while (textToType[startIndex] == charToRemove)
+            {
+                startIndex += 1;
+
+                if (startIndex >= textToType.Length)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private void AdvanceEnd()
+        {
+            endIndex = startIndex;
+
             while (endIndex < textToType.Length)
             {
                 var c = textToType[endIndex];
@@ -61,53 +111,6 @@ namespace BrokenKeyboard
                     }
                 }
             }
-
-            MaximumDistance = Distance;
-
-            while (Advance())
-            {
-                if (Distance > MaximumDistance)
-                {
-                    MaximumDistance = Distance;
-                }
-            }
-        }
-
-        private bool Advance()
-        {
-            var charToRemove = textToType[startIndex];
-            keyboardChars.Remove(charToRemove);
-
-            while (textToType[startIndex] == charToRemove)
-            {
-                startIndex += 1;
-
-                if (startIndex >= textToType.Length)
-                {
-                    return false;
-                }
-            }
-
-            for (var i = startIndex; i < endIndex; i++)
-            {
-                if (textToType[i] == charToRemove)
-                {
-                    endIndex = i;
-                    break;
-                }
-            }
-
-            if (endIndex < textToType.Length)
-            {
-                var charToAdd = textToType[endIndex];
-                keyboardChars.Add(charToAdd);
-                while (endIndex < textToType.Length && keyboardChars.Contains(textToType[endIndex]))
-                {
-                    endIndex += 1;
-                }
-            }
-
-            return true;
         }
     }
 }
